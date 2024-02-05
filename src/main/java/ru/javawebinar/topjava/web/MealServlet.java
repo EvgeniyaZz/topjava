@@ -2,7 +2,8 @@ package ru.javawebinar.topjava.web;
 
 import org.slf4j.Logger;
 import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.model.MealTo;
+import ru.javawebinar.topjava.storage.CollectionMealStorage;
+import ru.javawebinar.topjava.storage.MealStorage;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -10,66 +11,64 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static org.slf4j.LoggerFactory.getLogger;
 import static ru.javawebinar.topjava.MealTestData.CALORIES_PER_DAY;
-import static ru.javawebinar.topjava.MealTestData.meals;
 import static ru.javawebinar.topjava.util.MealsUtil.*;
 
 public class MealServlet extends HttpServlet {
     private static final Logger log = getLogger(MealServlet.class);
+    private static final MealStorage meals = new CollectionMealStorage();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        log.debug("receiving meal data");
         request.setCharacterEncoding("UTF-8");
         String id = request.getParameter("id");
-        String dateTime = request.getParameter("dateTime");
+        LocalDateTime dateTime = LocalDateTime.parse(request.getParameter("dateTime"));
         String description = request.getParameter("description");
-        String calories = request.getParameter("calories");
-        Meal meal;
+        int calories = Integer.parseInt(request.getParameter("calories"));
         if (id.isEmpty()) {
-            meal = new Meal();
-            meals.save(meal);
+            log.debug("create new meal");
+            meals.create(new Meal(dateTime, description, calories));
         } else {
-            meal = meals.get(Integer.parseInt(id));
+            log.debug("update meal, id={}", id);
+            meals.update(new Meal(Integer.parseInt(id), dateTime, description, calories));
         }
-        meal.setDateTime(LocalDateTime.parse(dateTime));
-        meal.setDescription(description);
-        meal.setCalories(Integer.parseInt(calories));
-        meals.update(meal);
         response.sendRedirect("meals");
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        log.debug("redirect to meals");
-
-        List<MealTo> mealsTo = createListTo(meals.getMeals(), CALORIES_PER_DAY);
-        String id = request.getParameter("id");
         String action = request.getParameter("action");
         if (action == null) {
-            request.setAttribute("mealsTo", mealsTo);
+            log.debug("redirect to meals");
+            request.setAttribute("mealsTo", createListTo(meals.getAll(), CALORIES_PER_DAY));
             request.getRequestDispatcher("/meals.jsp").forward(request, response);
             return;
         }
-        Meal meal;
+        String id = request.getParameter("id");
         switch (action) {
             case "delete":
+                log.debug("delete meal, id={}", id);
                 meals.delete(Integer.parseInt(id));
                 response.sendRedirect("meals");
                 return;
+            case "add":
             case "edit":
-                if (id.isEmpty()) {
+                Meal meal;
+                if (id == null) {
+                    log.debug("add meal");
                     meal = new Meal();
                 } else {
+                    log.debug("edit meal");
                     meal = meals.get(Integer.parseInt(id));
                 }
                 request.setAttribute("meal", meal);
-                request.getRequestDispatcher("/edit.jsp").forward(request, response);
+                request.getRequestDispatcher("/editMeal.jsp").forward(request, response);
                 break;
             default:
-                throw new IllegalArgumentException("Action " + action + " is illegal");
+                response.sendRedirect("meals");
         }
     }
 }

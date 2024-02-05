@@ -1,6 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page import="ru.javawebinar.topjava.util.TimeUtil" %>
 <html lang="ru">
 <head>
     <title>Meal list</title>
@@ -9,7 +10,7 @@
 <h3><a href="index.html">Home</a></h3>
 <hr>
 <h2>Meals</h2>
-<h4><a href="meals?id=&action=edit">Add meal</a></h4>
+<h4><a href="meals?action=add">Add meal</a></h4>
 <table border="1" cellpadding="8" cellspacing="0">
     <tr>
         <th>Date</th>
@@ -21,11 +22,7 @@
     <c:forEach items="${mealsTo}" var="mealTo">
         <jsp:useBean id="mealTo" type="ru.javawebinar.topjava.model.MealTo"/>
         <tr style="color: ${(mealTo.excess ? 'red' : 'green')}">
-            <td>
-                <fmt:parseDate value="${mealTo.dateTime}" pattern="yyyy-MM-dd'T'HH:mm" var="parsedDateTime"
-                               type="both"/>
-                <fmt:formatDate pattern="yyyy-MM-dd HH:mm" value="${parsedDateTime}"/>
-            </td>
+            <td>${TimeUtil.dateTimeFormatter.format(mealTo.dateTime)}</td>
             <td>${mealTo.description}</td>
             <td>${mealTo.calories}</td>
             <td><a href="meals?id=${mealTo.id}&action=edit">Update</a></td>

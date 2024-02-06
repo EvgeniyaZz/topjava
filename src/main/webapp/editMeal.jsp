@@ -18,7 +18,7 @@
             <tr>
                 <td>DateTime</td>
                 <td><input type="datetime-local" name="dateTime"
-                           value="${meal.dateTime == null ? TimeUtil.dateTimeFormatter.format(LocalDateTime.now()) : meal.dateTime}"/>
+                           value="${meal.id == null ? TimeUtil.DATE_TIME_FORMATTER.format(LocalDateTime.now()) : meal.dateTime}"/>
                 </td>
             </tr>
             <tr>

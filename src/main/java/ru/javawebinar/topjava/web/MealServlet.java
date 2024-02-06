@@ -5,6 +5,7 @@ import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.storage.CollectionMealStorage;
 import ru.javawebinar.topjava.storage.MealStorage;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -18,7 +19,13 @@ import static ru.javawebinar.topjava.util.MealsUtil.*;
 
 public class MealServlet extends HttpServlet {
     private static final Logger log = getLogger(MealServlet.class);
-    private static final MealStorage meals = new CollectionMealStorage();
+    private MealStorage meals;
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        meals = new CollectionMealStorage();
+    }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

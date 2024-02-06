@@ -23,27 +23,19 @@ public class CollectionMealStorage implements MealStorage {
     public Meal create(Meal meal) {
         log.info("create {}", meal);
         meal.setId(counter.incrementAndGet());
-        meals.put(counter.get(), meal);
-        return meal;
+        return meals.put(meal.getId(), meal);
     }
 
     @Override
     public Meal update(Meal meal) {
         log.info("update {}", meal);
-        int id = meal.getId();
-        if(isExist(id)) {
-            meals.put(id, meal);
-            return meal;
-        }
-        return null;
+        return meals.replace(meal.getId(), meal);
     }
 
     @Override
     public void delete(int id) {
         log.info("delete meal, id={}", id);
-        if (isExist(id)) {
-            meals.remove(id);
-        }
+        meals.remove(id);
     }
 
     @Override
@@ -56,9 +48,5 @@ public class CollectionMealStorage implements MealStorage {
     public Meal get(int id) {
         log.info("get meal, id={}", id);
         return meals.get(id);
-    }
-
-    private boolean isExist(int id) {
-        return meals.containsKey(id);
     }
 }

@@ -23,13 +23,17 @@ public class CollectionMealStorage implements MealStorage {
     public Meal create(Meal meal) {
         log.info("create {}", meal);
         meal.setId(counter.incrementAndGet());
-        return meals.put(meal.getId(), meal);
+        meals.put(meal.getId(), meal);
+        return meal;
     }
 
     @Override
     public Meal update(Meal meal) {
         log.info("update {}", meal);
-        return meals.replace(meal.getId(), meal);
+        if (meals.replace(meal.getId(), meal) != null) {
+            return meal;
+        }
+        return null;
     }
 
     @Override

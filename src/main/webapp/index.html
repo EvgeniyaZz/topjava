@@ -8,7 +8,16 @@
 <hr>
 <ul style="font-size: large">
     <li><a href="users">Users</a></li>
-    <li><a href="meals">Meals</a></li>
+    <br><br>
+    <form method="post" action="users">
+        <label>
+            <select name="userId">
+                <option value="1">Зайти как User</option>
+                <option value="2">Зайти как Admin</option>
+            </select>
+            <input type="submit" value="Выбрать">
+        </label>
+    </form>
 </ul>
 </body>
 </html>

@@ -15,11 +15,14 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 import static org.junit.Assert.assertThrows;
 import static ru.javawebinar.topjava.MealTestData.*;
 import static ru.javawebinar.topjava.MealTestData.getUpdatedMeal;
-import static ru.javawebinar.topjava.UserTestData.USER_ID;
+import static ru.javawebinar.topjava.UserTestData.*;
 
 import java.util.List;
 
-@ContextConfiguration("classpath:spring/spring-db.xml")
+@ContextConfiguration({
+        "classpath:spring/spring-app.xml",
+        "classpath:spring/spring-db.xml"
+})
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 public class MealServiceTest {
@@ -30,12 +33,17 @@ public class MealServiceTest {
     @Test
     public void get() {
         Meal meal = service.get(MEAL1_ID, USER_ID);
-        assertMatch(meal, MEAL_1);
+        assertMatch(meal, meal1);
     }
 
     @Test
     public void getNotFound() {
-        assertThrows(NotFoundException.class, () -> service.get(MEAL1_ID, OTHER_USER_ID));
+        assertThrows(NotFoundException.class, () -> service.get(NOT_FOUND, USER_ID));
+    }
+
+    @Test
+    public void getSomeoneElse() {
+        assertThrows(NotFoundException.class, () -> service.get(MEAL1_ID, ADMIN_ID));
     }
 
     @Test
@@ -46,7 +54,12 @@ public class MealServiceTest {
 
     @Test
     public void deletedNotFound() {
-        assertThrows(NotFoundException.class, () -> service.delete(MEAL1_ID, OTHER_USER_ID));
+        assertThrows(NotFoundException.class, () -> service.delete(NOT_FOUND, USER_ID));
+    }
+
+    @Test
+    public void deletedSomeoneElse() {
+        assertThrows(NotFoundException.class, () -> service.delete(MEAL1_ID, ADMIN_ID));
     }
 
     @Test
@@ -56,7 +69,7 @@ public class MealServiceTest {
     @Test
     public void getAll() {
         List<Meal> meals = service.getAll(USER_ID);
-        assertMatch(meals, MEAL_1, MEAL_2, MEAL_3, MEAL_4, MEAL_5, MEAL_6, MEAL_7);
+        assertMatch(meals, meal7, meal6, meal5, meal4, meal3, meal2, meal1);
     }
 
     @Test
@@ -68,7 +81,12 @@ public class MealServiceTest {
 
     @Test
     public void updateNotFound() {
-        assertThrows(NotFoundException.class, () -> service.update(MEAL_1, OTHER_USER_ID));
+        assertThrows(NotFoundException.class, () -> service.update(getNotFoundMeal(), USER_ID));
+    }
+
+    @Test
+    public void updateSomeoneElse() {
+        assertThrows(NotFoundException.class, () -> service.update(meal1, ADMIN_ID));
     }
 
     @Test
@@ -83,6 +101,6 @@ public class MealServiceTest {
 
     @Test
     public void createDuplicateDateTime() {
-        assertThrows(DuplicateKeyException.class, () -> service.create(new Meal(DUPLICATE_DATE_TIME, "new", 333), USER_ID));
+        assertThrows(DuplicateKeyException.class, () -> service.create(new Meal(meal1.getDateTime(), "new", 333), USER_ID));
     }
 }

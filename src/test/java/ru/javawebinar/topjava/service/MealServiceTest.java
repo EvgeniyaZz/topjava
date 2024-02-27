@@ -38,6 +38,18 @@ public class MealServiceTest {
     private static final StringBuilder results = new StringBuilder();
     private static final String DELIM = "----------";
 
+    @ClassRule
+    public static final ExternalResource SUMMARY = new ExternalResource() {
+
+        @Override
+        protected void after() {
+            log.info("\n" + DELIM +
+                    "\nTest                                                                                  " +
+                    "Duration, ms" +
+                    "\n" + DELIM + "\n" + results + DELIM + "\n");
+        }
+    };
+
     @Rule
     public final Stopwatch stopwatch = new Stopwatch() {
         @Override
@@ -50,18 +62,6 @@ public class MealServiceTest {
 
     @Autowired
     private MealService service;
-
-    @ClassRule
-    public static final ExternalResource SUMMARY = new ExternalResource() {
-
-        @Override
-        protected void after() {
-            log.info("\n" + DELIM +
-                    "\nTest                                                                                  " +
-                    "Duration, ms" +
-                    "\n" + DELIM + "\n" + results + DELIM + "\n");
-        }
-    };
 
     @Test
     public void delete() {

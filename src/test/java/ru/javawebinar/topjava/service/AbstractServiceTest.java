@@ -50,7 +50,7 @@ public abstract class AbstractServiceTest {
         });
     }
 
-    protected boolean isJPA() {
+    protected boolean isJpa() {
         return env.acceptsProfiles(Profiles.of(JPA, DATAJPA));
     }
 }

@@ -1,9 +1,10 @@
 package ru.javawebinar.topjava.web.meal;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.javawebinar.topjava.model.Meal;
@@ -20,62 +21,55 @@ import static ru.javawebinar.topjava.util.DateTimeUtil.parseLocalTime;
 
 @Controller
 @RequestMapping(value = "/meals")
-public class JpaMealController extends AbstractMealController {
+public class JspMealController extends AbstractMealController {
+
+    public JspMealController() {
+        super(LoggerFactory.getLogger(JspMealController.class));
+    }
 
     @GetMapping
-    public String getMeals(HttpServletRequest request) {
+    public String getAll(Model model) {
         log.info("meals");
-        if (request.getAttribute("meals") == null) {
-            request.setAttribute("meals", super.getAll());
-        }
+        model.addAttribute("meals", super.getAll());
         return "meals";
     }
 
-    @GetMapping("/delete&id={mealId}")
-    public String deleteMeal(@PathVariable String mealId) {
+    @GetMapping("/delete")
+    public String delete(HttpServletRequest request) {
         log.info("delete meal");
-        int id = Integer.parseInt(mealId);
-        super.delete(id);
+        super.delete(getId(request));
         return "redirect:/meals";
     }
 
     @GetMapping("/create")
-    public String createMeal(HttpServletRequest request) {
+    public String create(Model model) {
         log.info("create meal");
         Meal meal = new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 1000);
-        request.setAttribute("meal", meal);
-        return "forward:/meals/mealForm";
+        model.addAttribute("meal", meal);
+        return "mealForm";
     }
 
-    @GetMapping("/update&id={mealId}")
-    public String updateMeal(HttpServletRequest request, @PathVariable String mealId) {
+    @GetMapping("/update")
+    public String update(HttpServletRequest request, Model model) {
         log.info("update meal");
-        int id = Integer.parseInt(mealId);
-        Meal meal = super.get(id);
-        request.setAttribute("id", id);
-        request.setAttribute("meal", meal);
-        return "forward:/meals/mealForm";
-    }
-
-    @GetMapping("/mealForm")
-    public String getMeal() {
-        log.info("get meal");
+        Meal meal = super.get(getId(request));
+        model.addAttribute("meal", meal);
         return "mealForm";
     }
 
     @GetMapping("/filter")
-    public String filterMeals(HttpServletRequest request) {
+    public String filter(HttpServletRequest request, Model model) {
         log.info("filter meals");
         LocalDate startDate = parseLocalDate(request.getParameter("startDate"));
         LocalDate endDate = parseLocalDate(request.getParameter("endDate"));
         LocalTime startTime = parseLocalTime(request.getParameter("startTime"));
         LocalTime endTime = parseLocalTime(request.getParameter("endTime"));
-        request.setAttribute("meals", super.getBetween(startDate, startTime, endDate, endTime));
-        return "forward:/meals";
+        model.addAttribute("meals", super.getBetween(startDate, startTime, endDate, endTime));
+        return "meals";
     }
 
-    @PostMapping("/save")
-    public String saveMeal(HttpServletRequest request) {
+    @PostMapping
+    public String save(HttpServletRequest request) {
         log.info("save meal");
         Meal meal = new Meal(
                 LocalDateTime.parse(request.getParameter("dateTime")),

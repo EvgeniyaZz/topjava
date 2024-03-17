@@ -12,10 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 
-import javax.validation.*;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
+
+import static ru.javawebinar.topjava.util.ValidationUtil.checkNotFoundViolations;
 
 @Repository
 @Transactional(readOnly = true)
@@ -29,8 +29,6 @@ public class JdbcMealRepository implements MealRepository {
 
     private final SimpleJdbcInsert insertMeal;
 
-    private final Validator validator;
-
     public JdbcMealRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.insertMeal = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("meal")
@@ -38,38 +36,32 @@ public class JdbcMealRepository implements MealRepository {
 
         this.jdbcTemplate = jdbcTemplate;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
-
-        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
-        validator = validatorFactory.getValidator();
     }
 
     @Override
     @Transactional
     public Meal save(Meal meal, int userId) {
-        Set<ConstraintViolation<Meal>> violations = validator.validate(meal);
-        if (violations.size() > 0) {
-            throw new ConstraintViolationException(violations);
-        } else {
-            MapSqlParameterSource map = new MapSqlParameterSource()
-                    .addValue("id", meal.getId())
-                    .addValue("description", meal.getDescription())
-                    .addValue("calories", meal.getCalories())
-                    .addValue("date_time", meal.getDateTime())
-                    .addValue("user_id", userId);
+        checkNotFoundViolations(meal);
 
-            if (meal.isNew()) {
-                Number newId = insertMeal.executeAndReturnKey(map);
-                meal.setId(newId.intValue());
-            } else {
-                if (namedParameterJdbcTemplate.update("" +
-                        "UPDATE meal " +
-                        "   SET description=:description, calories=:calories, date_time=:date_time " +
-                        " WHERE id=:id AND user_id=:user_id", map) == 0) {
-                    return null;
-                }
+        MapSqlParameterSource map = new MapSqlParameterSource()
+                .addValue("id", meal.getId())
+                .addValue("description", meal.getDescription())
+                .addValue("calories", meal.getCalories())
+                .addValue("date_time", meal.getDateTime())
+                .addValue("user_id", userId);
+
+        if (meal.isNew()) {
+            Number newId = insertMeal.executeAndReturnKey(map);
+            meal.setId(newId.intValue());
+        } else {
+            if (namedParameterJdbcTemplate.update("" +
+                    "UPDATE meal " +
+                    "   SET description=:description, calories=:calories, date_time=:date_time " +
+                    " WHERE id=:id AND user_id=:user_id", map) == 0) {
+                return null;
             }
-            return meal;
         }
+        return meal;
     }
 
     @Override

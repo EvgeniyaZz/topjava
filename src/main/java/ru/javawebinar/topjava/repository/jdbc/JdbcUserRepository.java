@@ -16,7 +16,7 @@ import ru.javawebinar.topjava.repository.UserRepository;
 
 import java.util.*;
 
-import static ru.javawebinar.topjava.util.ValidationUtil.checkNotFoundViolations;
+import static ru.javawebinar.topjava.util.ValidationUtil.checkViolations;
 
 @Repository
 @Transactional(readOnly = true)
@@ -24,7 +24,7 @@ public class JdbcUserRepository implements UserRepository {
 
     private static final BeanPropertyRowMapper<User> ROW_MAPPER = BeanPropertyRowMapper.newInstance(User.class);
 
-    private static final ResultSetExtractor<List<User>> RSE = rs -> {
+    private static final ResultSetExtractor<List<User>> RESULT_SET_EXTRACTOR = rs -> {
 
         Map<Integer, User> users = new LinkedHashMap<>();
         while (rs.next()) {
@@ -38,7 +38,7 @@ public class JdbcUserRepository implements UserRepository {
 
                 users.put(id, user);
             } else {
-                EnumSet<Role> roles = (EnumSet<Role>) user.getRoles();
+                Set<Role> roles = user.getRoles();
                 roles.add(Role.valueOf(rs.getString("role")));
             }
         }
@@ -64,7 +64,7 @@ public class JdbcUserRepository implements UserRepository {
     @Override
     @Transactional
     public User save(User user) {
-        checkNotFoundViolations(user);
+        checkViolations(user);
 
         BeanPropertySqlParameterSource parameterSource = new BeanPropertySqlParameterSource(user);
 
@@ -101,19 +101,19 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public User get(int id) {
-        List<User> users = jdbcTemplate.query("SELECT * FROM users LEFT JOIN user_role ur on users.id = ur.user_id WHERE id=?", RSE, id);
+        List<User> users = jdbcTemplate.query("SELECT * FROM users LEFT JOIN user_role ur on users.id = ur.user_id WHERE id=?", RESULT_SET_EXTRACTOR, id);
         return DataAccessUtils.singleResult(users);
     }
 
     @Override
     public User getByEmail(String email) {
 //        return jdbcTemplate.queryForObject("SELECT * FROM users WHERE email=?", ROW_MAPPER, email);
-        Collection<User> users = jdbcTemplate.query("SELECT * FROM users LEFT JOIN user_role ur on users.id = ur.user_id WHERE email=?", RSE, email);
+        Collection<User> users = jdbcTemplate.query("SELECT * FROM users LEFT JOIN user_role ur on users.id = ur.user_id WHERE email=?", RESULT_SET_EXTRACTOR, email);
         return DataAccessUtils.singleResult(users);
     }
 
     @Override
     public List<User> getAll() {
-        return jdbcTemplate.query("SELECT * FROM users LEFT JOIN user_role ur on users.id = ur.user_id ORDER BY name, email", RSE);
+        return jdbcTemplate.query("SELECT * FROM users LEFT JOIN user_role ur on users.id = ur.user_id ORDER BY name, email", RESULT_SET_EXTRACTOR);
     }
 }

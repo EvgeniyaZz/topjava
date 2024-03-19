@@ -23,7 +23,7 @@ public class ValidationUtil {
         return validator;
     }
 
-    public static <T> void checkNotFoundViolations(T object) {
+    public static <T> void checkViolations(T object) {
         Set<ConstraintViolation<T>> violations = getValidator().validate(object);
         if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);

@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import ru.javawebinar.topjava.MealTestData;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
@@ -18,6 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -33,7 +36,7 @@ class MealRestControllerTest extends AbstractControllerTest {
     private static final String REST_URL = MealRestController.REST_URL + '/';
 
     @Autowired
-    MealService mealService;
+    private MealService mealService;
 
     @Test
     void get() throws Exception {
@@ -57,7 +60,7 @@ class MealRestControllerTest extends AbstractControllerTest {
         perform(MockMvcRequestBuilders.get(REST_URL))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(MEAL_TO_MATCHER.contentJson(getTos(meals, authUserCaloriesPerDay())));
+                .andExpect(MEAL_TO_MATCHER.contentJson(mealsTo));
     }
 
     @Test
@@ -88,21 +91,13 @@ class MealRestControllerTest extends AbstractControllerTest {
 
     @Test
     void getBetween() throws Exception {
-        List<MealTo> filtered = MealsUtil.getFilteredTos(mealService.getBetweenInclusive(
-                LocalDate.of(2020, Month.JANUARY, 30),
-                LocalDate.of(2020, Month.JANUARY, 30),
-                USER_ID),
-                authUserCaloriesPerDay(),
-                LocalTime.of(10, 0),
-                LocalTime.of(14, 0));
-
-        perform(MockMvcRequestBuilders.get(REST_URL + "filter?startDate=2020-01-30T10:00:00" +
-                                                                        "&endDate=2020-01-30T14:00:00" +
-                                                                        "&startTime=2020-01-30T10:00:00" +
-                                                                        "&endTime=2020-01-30T14:00:00"))
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("startDateTime", "2020-01-30T10:00:00");
+        params.add("endDateTime", "2020-01-30T14:00:00");
+        perform(MockMvcRequestBuilders.get(REST_URL + "filter").params(params))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(MEAL_TO_MATCHER.contentJson(filtered));
+                .andExpect(MEAL_TO_MATCHER.contentJson(List.of(mealTo2, mealTo1)));
     }
 }

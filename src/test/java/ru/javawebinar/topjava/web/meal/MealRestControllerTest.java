@@ -10,17 +10,11 @@ import org.springframework.util.MultiValueMap;
 import ru.javawebinar.topjava.MealTestData;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
-import ru.javawebinar.topjava.to.MealTo;
-import ru.javawebinar.topjava.util.MealsUtil;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.Month;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -28,8 +22,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.javawebinar.topjava.MealTestData.*;
 import static ru.javawebinar.topjava.UserTestData.USER_ID;
-import static ru.javawebinar.topjava.util.MealsUtil.getTos;
-import static ru.javawebinar.topjava.web.SecurityUtil.authUserCaloriesPerDay;
 
 class MealRestControllerTest extends AbstractControllerTest {
 
@@ -69,6 +61,7 @@ class MealRestControllerTest extends AbstractControllerTest {
         ResultActions action = perform(MockMvcRequestBuilders.post(REST_URL)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.writeValue(newMeal)))
+                .andDo(print())
                 .andExpect(status().isCreated());
 
         Meal created = MEAL_MATCHER.readFromJson(action);
@@ -92,8 +85,11 @@ class MealRestControllerTest extends AbstractControllerTest {
     @Test
     void getBetween() throws Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("startDateTime", "2020-01-30T10:00:00");
-        params.add("endDateTime", "2020-01-30T14:00:00");
+        params.add("startDate", "2020-01-30");
+        params.add("startTime", "10:00");
+        params.add("endDate", "2020-01-30");
+        params.add("endTime", "14:00");
+
         perform(MockMvcRequestBuilders.get(REST_URL + "filter").params(params))
                 .andDo(print())
                 .andExpect(status().isOk())

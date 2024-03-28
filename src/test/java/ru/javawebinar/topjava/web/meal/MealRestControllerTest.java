@@ -84,13 +84,10 @@ class MealRestControllerTest extends AbstractControllerTest {
 
     @Test
     void getBetween() throws Exception {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("startDate", "2020-01-30");
-        params.add("startTime", "10:00");
-        params.add("endDate", "2020-01-30");
-        params.add("endTime", "14:00");
-
-        perform(MockMvcRequestBuilders.get(REST_URL + "filter").params(params))
+        perform(MockMvcRequestBuilders.get(REST_URL + "filter")
+                .param("startDate", "")
+                .param("endDate", "2020-01-30")
+                .param("endTime", "14:00"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))

@@ -23,8 +23,8 @@
         </mvc:message-converters>
     </mvc:annotation-driven>
 
-    <bean id="customDateFormatter" class="ru.javawebinar.topjava.util.DateTimeUtil.CustomDateFormatter"/>
-    <bean id="customTimeFormatter" class="ru.javawebinar.topjava.util.DateTimeUtil.CustomTimeFormatter"/>
+    <bean id="customDateFormatter" class="ru.javawebinar.topjava.web.DateTimeUtil.CustomDateFormatter"/>
+    <bean id="customTimeFormatter" class="ru.javawebinar.topjava.web.DateTimeUtil.CustomTimeFormatter"/>
 
     <bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
         <property name="formatters">

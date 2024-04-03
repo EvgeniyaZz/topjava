@@ -9,6 +9,13 @@ function makeEditable(datatableApi) {
         }
     });
 
+    // https://php.ru/forum/threads/zapis-v-bd-pri-nazhatie-na-checkbox.66614/
+    $("input:checkbox").on("change", function(){
+        let checkbox = $(this);
+        let id = ($(this).closest('tr').attr("id"))
+        enable(checkbox, id);
+    })
+
     $(document).ajaxError(function (event, jqXHR, options, jsExc) {
         failNoty(jqXHR);
     });
@@ -36,6 +43,10 @@ function updateTable() {
     $.get(ctx.ajaxUrl, function (data) {
         ctx.datatableApi.clear().rows.add(data).draw();
     });
+}
+
+function updateTableByData(data) {
+    ctx.datatableApi.clear().rows.add(data).draw();
 }
 
 function save() {
